@@ -45,6 +45,8 @@ class Snake():
         self.body_bl = pygame.image.load(
             'assets/images/body_bottomleft.png').convert_alpha()
 
+        self.crunch_sound = pygame.mixer.Sound('assets/sounds/crunch.wav')
+
     def update_head_graphics(self):
         head_relation = self.body[1] - self.body[0]
         if head_relation == Vector2(1, 0):
@@ -112,18 +114,26 @@ class Snake():
     def grow(self):
         self.add_new_block = True
 
+    def play_crunch_sound(self):
+        self.crunch_sound.play()
+
+    def reset(self):
+        self.body = [Vector2(2, 3), Vector2(3, 3), Vector2(4, 3)]
+        self.direction = Vector2(0, 0)
+
 
 class Apple():
     def __init__(self):
         self.position = Vector2(random.randint(
             0, CELL_NUMBER - 1), random.randint(0, CELL_NUMBER - 1))
+        self.texture = pygame.image.load("assets/images/apple.png")
 
     def draw(self, screen):
         x_pos = int(self.position.x * CELL_SIZE)
         y_pos = int(self.position.y * CELL_SIZE)
 
         block_rect = pygame.Rect(x_pos, y_pos, CELL_SIZE, CELL_SIZE)
-        pygame.draw.rect(screen, (126, 166, 114), block_rect)
+        screen.blit(self.texture, block_rect)
 
     def randomize(self):
         self.position = Vector2(random.randint(
@@ -150,6 +160,11 @@ class GameState:
             if apple.position == self.snake.body[0]:
                 apple.randomize()
                 self.snake.grow()
+                self.snake.play_crunch_sound()
+
+        for apple in self.apples:
+            if apple.position in self.snake.body[1:]:
+                apple.randomize()
 
     def check_fail(self):
         if not 0 <= self.snake.body[0].x < CELL_NUMBER or not 0 <= self.snake.body[0].y < CELL_NUMBER:
@@ -159,7 +174,7 @@ class GameState:
             self.game_over()
 
     def game_over(self):
-        pygame.quit()
+        self.snake.reset()
 
 
 class UserInterface:
