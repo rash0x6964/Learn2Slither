@@ -20,7 +20,8 @@ class GameState:
 
     def _spawn_apples(self):
         self.green_apples = [
-            GreenApple(self.cell_number, self._forbidden_cells()) for _ in range(2)
+            GreenApple(self.cell_number, self._forbidden_cells())
+            for _ in range(2)
         ]
         self.red_apple = RedApple(self.cell_number, self._forbidden_cells())
 
@@ -55,7 +56,9 @@ class GameState:
         if alive and self.snake.length == 0:
             alive = False
 
-        self.max_length_reached = max(self.max_length_reached, self.snake.length)
+        self.max_length_reached = max(
+            self.max_length_reached, self.snake.length
+        )
 
         return {
             "alive": alive,

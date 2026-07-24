@@ -42,11 +42,17 @@ class Renderer:
     def _draw_apples(self, game_state):
         for apple in game_state.green_apples:
             self._draw_cell(apple.position, self.colors["green_apple"])
-        self._draw_cell(game_state.red_apple.position, self.colors["red_apple"])
+        self._draw_cell(
+            game_state.red_apple.position, self.colors["red_apple"]
+        )
 
     def _draw_snake(self, snake):
         for i, block in enumerate(snake.body):
-            color = self.colors["snake_head"] if i == 0 else self.colors["snake_body"]
+            color = (
+                self.colors["snake_head"]
+                if i == 0
+                else self.colors["snake_body"]
+            )
             self._draw_cell(block, color)
 
     def _draw_cell(self, position, color):

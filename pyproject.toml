@@ -12,5 +12,10 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "flake8>=7.3.0",
     "ruff>=0.15.22",
 ]
+
+
+[tool.ruff]
+line-length = 79

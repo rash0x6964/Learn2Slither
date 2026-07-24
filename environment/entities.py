@@ -64,7 +64,9 @@ class Snake:
 
     def hit_wall(self):
         head = self.head
-        return not (0 <= head.x < self.cell_number and 0 <= head.y < self.cell_number)
+        return not (
+            0 <= head.x < self.cell_number and 0 <= head.y < self.cell_number
+        )
 
     def hit_self(self):
         return self.head in self.body[1:]
