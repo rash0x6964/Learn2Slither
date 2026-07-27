@@ -1,19 +1,20 @@
-import argparse
 import sys
-
 import pygame
+import argparse
+import screens
 
 from environment.game_state import GameState
 from environment.renderer import Renderer
-from interpreter import print_vision
-from agent.agent import QLearningAgent
-from agent.action import action_to_vector
 from agent.rewards import compute_reward
+from agent.action import action_to_vector
+from agent.agent import QLearningAgent
+from interpreter import print_vision
+
+CELL_SIZE = 32
 
 
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(prog="snake", description="Learn2Slither")
-
     parser.add_argument(
         "-sessions",
         type=int,
@@ -36,7 +37,7 @@ def parse_args(argv=None):
         "-visual",
         choices=["on", "off"],
         default="on",
-        help="show the graphical board + terminal vision (on), "
+        help="show the lobby/config/board/results screens (on), "
         "or run headless with only Game-over summaries (off)",
     )
     parser.add_argument(
@@ -85,23 +86,58 @@ def _pump_events():
 
 
 def run(args):
-    game_state = GameState(args.board_size)
+    clock = None
+    window = None
+    visual = args.visual == "on"
+
+    if visual:
+        pygame.init()
+        window = pygame.display.set_mode(screens.MENU_WINDOW_SIZE)
+        pygame.display.set_caption("Learn2Slither")
+        clock = pygame.time.Clock()
+
+        if screens.show_lobby(window, clock) != "start":
+            pygame.quit()
+            return
+
+        config = screens.show_config(window, clock, args)
+        if config is None:
+            pygame.quit()
+            return
+    else:
+        config = {
+            "sessions": args.sessions,
+            "speed": args.speed,
+            "board_size": args.board_size,
+            "dontlearn": args.dontlearn,
+            "load_path": args.load,
+            "save_path": args.save,
+        }
+
+    game_state = GameState(config["board_size"])
     agent = QLearningAgent()
 
-    if args.load:
-        agent.load(args.load)
-        print(f"Load trained model from {args.load}")
+    if config["load_path"]:
+        agent.load(config["load_path"])
+        print(f"Load trained model from {config['load_path']}")
 
-    if args.dontlearn:
+    if config["dontlearn"]:
         agent.set_learning(False)
 
-    visual = args.visual == "on"
-    renderer = Renderer(game_state) if visual else None
-    clock = pygame.time.Clock() if visual else None
+    renderer = None
+    if visual:
+        window = pygame.display.set_mode(
+            (
+                config["board_size"] * CELL_SIZE,
+                config["board_size"] * CELL_SIZE,
+            )
+        )
+        renderer = Renderer(config["board_size"], cell_size=CELL_SIZE)
 
     keep_running = True
+    episode_results = []
 
-    for _ in range(args.sessions):
+    for _ in range(config["sessions"]):
         if not keep_running:
             break
 
@@ -124,17 +160,20 @@ def run(args):
             )
             agent.update(state, action, reward, next_state)
 
-            if renderer:
-                renderer.draw(game_state)
+            if visual:
+                renderer.draw_onto(window, game_state, top_left=(0, 0))
+                pygame.display.flip()
+
                 if args.step_by_step:
                     keep_running = _wait_for_step()
                 else:
                     keep_running = _pump_events()
-                    clock.tick(args.speed)
+                    clock.tick(config["speed"])
                 if not keep_running:
                     break
 
             if not info["alive"]:
+                episode_results.append((info["max_length"], info["steps"]))
                 print(
                     f"Game over, max length = {info['max_length']}, "
                     f"max duration = {info['steps']}"
@@ -143,12 +182,14 @@ def run(args):
 
             state = next_state
 
-    if renderer:
-        renderer.close()
+    if config["save_path"]:
+        agent.save(config["save_path"])
+        print(f"Save learning state in {config['save_path']}")
 
-    if args.save:
-        agent.save(args.save)
-        print(f"Save learning state in {args.save}")
+    if visual:
+        window = pygame.display.set_mode(screens.MENU_WINDOW_SIZE)
+        screens.show_results(window, clock, episode_results)
+        pygame.quit()
 
 
 def main(argv=None):

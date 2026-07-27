@@ -1,68 +1,103 @@
+import os
 import pygame
 
-CELL_SIZE = 40
+ASSET_DIR = os.path.normpath(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets")
+)
+
+FLOOR_LIGHT = (42, 78, 48)
+FLOOR_DARK = (36, 68, 42)
+FRAME_COLOR = (58, 65, 98)
+
+DIRECTIONS = ("up", "down", "left", "right")
+
+
+def _load(name, cell_size):
+    path = os.path.join(ASSET_DIR, name)
+    image = pygame.image.load(path).convert_alpha()
+    return pygame.transform.scale(image, (cell_size, cell_size))
+
+
+def _direction_between(from_pos, to_pos):
+    dx, dy = to_pos.x - from_pos.x, to_pos.y - from_pos.y
+    if dx > 0:
+        return "right"
+    if dx < 0:
+        return "left"
+    if dy > 0:
+        return "down"
+    return "up"
 
 
 class Renderer:
-    def __init__(self, game_state, cell_size=CELL_SIZE):
+    def __init__(self, cell_number, cell_size=32):
         pygame.init()
+        self.cell_number = cell_number
         self.cell_size = cell_size
-        self.cell_number = game_state.cell_number
-        self.window = pygame.display.set_mode(
-            (self.cell_number * cell_size, self.cell_number * cell_size)
-        )
-        pygame.display.set_caption("Learn2Slither")
-        self.colors = {
-            "background": (30, 30, 30),
-            "grid": (45, 45, 45),
-            "snake_head": (0, 140, 255),
-            "snake_body": (0, 90, 200),
-            "green_apple": (40, 200, 40),
-            "red_apple": (210, 40, 40),
+        self.board_pixel_size = cell_number * cell_size
+
+        self.head_images = {
+            d: _load(f"head_{d}.png", cell_size) for d in DIRECTIONS
         }
+        self.tail_images = {
+            d: _load(f"tail_{d}.png", cell_size) for d in DIRECTIONS
+        }
+        self.body_image = _load("body.png", cell_size)
+        self.green_apple_image = _load("apple_green.png", cell_size)
+        self.red_apple_image = _load("apple_red.png", cell_size)
 
-    def draw(self, game_state):
-        self.window.fill(self.colors["background"])
-        self._draw_grid()
-        self._draw_apples(game_state)
-        self._draw_snake(game_state.snake)
-        pygame.display.update()
+    def draw_onto(self, surface, game_state, top_left=(0, 0)):
+        """Draw the board onto `surface` at `top_left`. The caller is
+        responsible for creating the window and flipping the display."""
+        ox, oy = top_left
+        self._draw_floor(surface, ox, oy)
+        self._draw_apples(surface, game_state, ox, oy)
+        self._draw_snake(surface, game_state.snake, ox, oy)
+        self._draw_frame(surface, ox, oy)
 
-    def _draw_grid(self):
+    def _cell_rect(self, x, y, ox, oy):
+        return pygame.Rect(
+            ox + int(x) * self.cell_size,
+            oy + int(y) * self.cell_size,
+            self.cell_size,
+            self.cell_size,
+        )
+
+    def _draw_floor(self, surface, ox, oy):
         for x in range(self.cell_number):
             for y in range(self.cell_number):
-                rect = pygame.Rect(
-                    x * self.cell_size,
-                    y * self.cell_size,
-                    self.cell_size,
-                    self.cell_size,
-                )
-                pygame.draw.rect(self.window, self.colors["grid"], rect, 1)
+                color = FLOOR_LIGHT if (x + y) % 2 == 0 else FLOOR_DARK
+                surface.fill(color, self._cell_rect(x, y, ox, oy))
 
-    def _draw_apples(self, game_state):
-        for apple in game_state.green_apples:
-            self._draw_cell(apple.position, self.colors["green_apple"])
-        self._draw_cell(
-            game_state.red_apple.position, self.colors["red_apple"]
-        )
-
-    def _draw_snake(self, snake):
-        for i, block in enumerate(snake.body):
-            color = (
-                self.colors["snake_head"]
-                if i == 0
-                else self.colors["snake_body"]
-            )
-            self._draw_cell(block, color)
-
-    def _draw_cell(self, position, color):
+    def _draw_frame(self, surface, ox, oy):
         rect = pygame.Rect(
-            int(position.x) * self.cell_size,
-            int(position.y) * self.cell_size,
-            self.cell_size,
-            self.cell_size,
+            ox - 4,
+            oy - 4,
+            self.board_pixel_size + 8,
+            self.board_pixel_size + 8,
         )
-        pygame.draw.rect(self.window, color, rect)
+        pygame.draw.rect(surface, FRAME_COLOR, rect, width=4)
 
-    def close(self):
-        pygame.quit()
+    def _draw_apples(self, surface, game_state, ox, oy):
+        for apple in game_state.green_apples:
+            rect = self._cell_rect(apple.position.x, apple.position.y, ox, oy)
+            surface.blit(self.green_apple_image, rect.topleft)
+        red = game_state.red_apple
+        rect = self._cell_rect(red.position.x, red.position.y, ox, oy)
+        surface.blit(self.red_apple_image, rect.topleft)
+
+    def _draw_snake(self, surface, snake, ox, oy):
+        body = snake.body
+        n = len(body)
+        for i, segment in enumerate(body):
+            rect = self._cell_rect(segment.x, segment.y, ox, oy)
+            if i == 0:
+                facing = (
+                    _direction_between(body[1], body[0]) if n > 1 else "right"
+                )
+                surface.blit(self.head_images[facing], rect.topleft)
+            elif i == n - 1:
+                facing = _direction_between(body[i], body[i - 1])
+                surface.blit(self.tail_images[facing], rect.topleft)
+            else:
+                surface.blit(self.body_image, rect.topleft)
