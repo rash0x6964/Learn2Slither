@@ -1,8 +1,6 @@
 import os
-import glob
 import theme
 import pygame
-
 from widgets import Button, SelectList, Stepper, Toggle
 
 MENU_WINDOW_SIZE = (480, 480)
@@ -12,8 +10,7 @@ MODELS_DIR = "models"
 def _models_available():
     if not os.path.isdir(MODELS_DIR):
         return []
-    pattern = os.path.join(MODELS_DIR, "*.json")
-    return sorted(os.path.basename(p) for p in glob.glob(pattern))
+    return sorted(f for f in os.listdir(MODELS_DIR) if f.endswith(".pt"))
 
 
 def show_lobby(window, clock):
@@ -106,6 +103,7 @@ def show_config(window, clock, args):
             "dontlearn": dontlearn_toggle.value,
             "load_path": load_path,
             "save_path": args.save,
+            "max_steps": args.max_steps,
         }
 
     def back():

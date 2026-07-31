@@ -1,14 +1,15 @@
-import sys
-import pygame
 import argparse
-import screens
+import sys
 
+import pygame
+
+import screens
 from environment.game_state import GameState
 from environment.renderer import Renderer
-from agent.rewards import compute_reward
-from agent.action import action_to_vector
-from agent.agent import QLearningAgent
 from interpreter import print_vision
+from agent.agent import QLearningAgent
+from agent.action import action_to_vector
+from agent.rewards import compute_reward
 
 CELL_SIZE = 32
 
@@ -61,6 +62,14 @@ def parse_args(argv=None):
     parser.add_argument(
         "-board-size", type=int, default=10, help="board width/height in cells"
     )
+    parser.add_argument(
+        "-max-steps",
+        type=int,
+        default=2000,
+        help="force a session to end as a timeout if it runs this many "
+        "steps without dying -- guards against a deterministic "
+        "greedy policy (e.g. -dontlearn) looping forever",
+    )
     return parser.parse_args(argv)
 
 
@@ -112,6 +121,7 @@ def run(args):
             "dontlearn": args.dontlearn,
             "load_path": args.load,
             "save_path": args.save,
+            "max_steps": args.max_steps,
         }
 
     game_state = GameState(config["board_size"])
@@ -176,6 +186,15 @@ def run(args):
                 episode_results.append((info["max_length"], info["steps"]))
                 print(
                     f"Game over, max length = {info['max_length']}, "
+                    f"max duration = {info['steps']}"
+                )
+                break
+
+            timed_out = game_state.steps >= config["max_steps"]
+            if timed_out:
+                episode_results.append((info["max_length"], info["steps"]))
+                print(
+                    f"Game over (timeout), max length = {info['max_length']}, "
                     f"max duration = {info['steps']}"
                 )
                 break
