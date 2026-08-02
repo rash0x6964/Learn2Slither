@@ -51,7 +51,8 @@ def build_vision_lines(game_state):
             )
             lines.append(row)
         else:
-            lines.append(_cell_char(game_state, hx, y))
+            char = _cell_char(game_state, hx, y)
+            lines.append(" " * (hx + 1) + char)
     return lines
 
 
