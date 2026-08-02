@@ -3,7 +3,7 @@ import theme
 import pygame
 from widgets import Button, SelectList, Stepper, Toggle
 
-MENU_WINDOW_SIZE = (480, 480)
+MENU_WINDOW_SIZE = (480, 560)
 MODELS_DIR = "models"
 
 
@@ -76,7 +76,7 @@ def show_config(window, clock, args):
         (40, 210, 400, 32), "Board size", args.board_size, 1, 5, 30, "{:.0f}"
     )
     dontlearn_toggle = Toggle(
-        (40, 260, 90, 28), "Don't learn (exploit only)", args.dontlearn
+        (40, 260, 400, 28), "Don't learn (exploit only)", args.dontlearn
     )
 
     models = _models_available()

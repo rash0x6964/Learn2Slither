@@ -105,32 +105,40 @@ class Stepper:
 
 
 class Toggle:
+    SWITCH_WIDTH = 70
+
     def __init__(self, rect, label, value=False):
-        self.rect = pygame.Rect(rect)
+        self.row_rect = pygame.Rect(rect)
         self.label = label
         self.value = value
+        self.switch_rect = pygame.Rect(
+            self.row_rect.right - self.SWITCH_WIDTH,
+            self.row_rect.y,
+            self.SWITCH_WIDTH,
+            self.row_rect.height,
+        )
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            if self.rect.collidepoint(event.pos):
+            if self.switch_rect.collidepoint(event.pos):
                 self.value = not self.value
 
     def draw(self, surface):
         theme.draw_text(
             surface,
             self.label,
-            (self.rect.x, self.rect.y + 4),
+            (self.row_rect.x, self.row_rect.y + 4),
             size=16,
             color=theme.INK,
         )
         state_text = "ON" if self.value else "OFF"
         color = theme.GOOD if self.value else theme.MUTED
-        pygame.draw.rect(surface, theme.PANEL, self.rect, width=0)
-        pygame.draw.rect(surface, color, self.rect, width=2)
+        pygame.draw.rect(surface, theme.PANEL, self.switch_rect)
+        pygame.draw.rect(surface, color, self.switch_rect, width=2)
         theme.draw_text(
             surface,
             state_text,
-            self.rect.center,
+            self.switch_rect.center,
             size=14,
             color=color,
             center=True,
