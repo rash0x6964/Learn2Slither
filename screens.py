@@ -44,7 +44,7 @@ def show_lobby(window, clock):
             "LEARN2SLITHER",
             (cx, 140),
             size=38,
-            color=theme.GOOD,
+            color=theme.TEXT,
             center=True,
         )
         theme.draw_text(
@@ -133,7 +133,7 @@ def show_config(window, clock, args):
 
         window.fill(theme.DARK)
         theme.draw_text(
-            window, "CONFIGURATION", (40, 50), size=24, color=theme.INK
+            window, "CONFIGURATION", (40, 50), size=24, color=theme.TEXT
         )
         for widget in (
             sessions_stepper,
@@ -143,7 +143,7 @@ def show_config(window, clock, args):
         ):
             widget.draw(window)
         theme.draw_text(
-            window, "Load model:", (40, 305), size=14, color=theme.INK
+            window, "Load model:", (40, 305), size=16, color=theme.TEXT
         )
         load_select.draw(window)
         start_button.draw(window)
@@ -177,7 +177,7 @@ def show_results(window, clock, episode_results):
             close_button.handle_event(event)
 
         window.fill(theme.DARK)
-        theme.draw_text(window, "RESULTS", (40, 40), size=26, color=theme.INK)
+        theme.draw_text(window, "RESULTS", (40, 40), size=26, color=theme.TEXT)
 
         if lengths:
             best_length = max(lengths)
@@ -188,28 +188,28 @@ def show_results(window, clock, episode_results):
                 f"Sessions run: {len(lengths)}",
                 (40, 100),
                 size=16,
-                color=theme.INK,
+                color=theme.TEXT,
             )
             theme.draw_text(
                 window,
                 f"Best length: {best_length}",
                 (40, 130),
                 size=16,
-                color=theme.GOOD,
+                color=theme.ACCENT,
             )
             theme.draw_text(
                 window,
                 f"Average length: {avg_length:.2f}",
                 (40, 160),
                 size=16,
-                color=theme.INK,
+                color=theme.TEXT,
             )
             theme.draw_text(
                 window,
                 f"Average duration: {avg_duration:.1f} steps",
                 (40, 190),
                 size=16,
-                color=theme.INK,
+                color=theme.TEXT,
             )
         else:
             theme.draw_text(

@@ -21,14 +21,13 @@ class Button:
 
     def draw(self, surface):
         if not self.enabled:
-            bg, fg, border = theme.PANEL, theme.MUTED, theme.PANEL_LIGHT
+            bg, fg = theme.PANEL, theme.MUTED
         elif self.hovered:
-            bg, fg, border = theme.ACCENT, theme.BLACK, theme.INK
+            bg, fg = theme.ACCENT, theme.DARK
         else:
-            bg, fg, border = theme.PANEL_LIGHT, theme.INK, theme.ACCENT_DARK
+            bg, fg = theme.MUTED, theme.TEXT
 
         pygame.draw.rect(surface, bg, self.rect)
-        pygame.draw.rect(surface, border, self.rect, width=2)
         theme.draw_text(
             surface,
             self.label,
@@ -89,7 +88,7 @@ class Stepper:
             self.label,
             (self.rect.x, self.rect.y + 4),
             size=16,
-            color=theme.INK,
+            color=theme.TEXT,
         )
         value_text = self.value_format.format(self.value)
         value_x = self.minus_button.rect.x - 70
@@ -98,7 +97,7 @@ class Stepper:
             value_text,
             (value_x, self.rect.y + 4),
             size=16,
-            color=theme.GOLD,
+            color=theme.TEXT,
         )
         self.minus_button.draw(surface)
         self.plus_button.draw(surface)
@@ -129,10 +128,10 @@ class Toggle:
             self.label,
             (self.row_rect.x, self.row_rect.y + 4),
             size=16,
-            color=theme.INK,
+            color=theme.TEXT,
         )
         state_text = "ON" if self.value else "OFF"
-        color = theme.GOOD if self.value else theme.MUTED
+        color = theme.TEXT if self.value else theme.MUTED
         pygame.draw.rect(surface, theme.PANEL, self.switch_rect)
         pygame.draw.rect(surface, color, self.switch_rect, width=2)
         theme.draw_text(
@@ -170,13 +169,12 @@ class SelectList:
 
     def draw(self, surface):
         pygame.draw.rect(surface, theme.PANEL, self.rect)
-        pygame.draw.rect(surface, theme.PANEL_LIGHT, self.rect, width=2)
         if not self.options:
             theme.draw_text(
                 surface,
                 "(none found)",
                 (self.rect.x + 8, self.rect.y + 8),
-                size=14,
+                size=32,
                 color=theme.MUTED,
             )
             return
@@ -188,11 +186,11 @@ class SelectList:
                 self.row_height,
             )
             if i == self.selected_index:
-                pygame.draw.rect(surface, theme.ACCENT_DARK, row_rect)
+                pygame.draw.rect(surface, theme.ACCENT, row_rect)
             theme.draw_text(
                 surface,
                 option,
                 (row_rect.x + 8, row_rect.y + 6),
                 size=14,
-                color=theme.INK,
+                color=theme.TEXT,
             )

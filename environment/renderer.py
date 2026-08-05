@@ -5,9 +5,8 @@ ASSET_DIR = os.path.normpath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets")
 )
 
-FLOOR_LIGHT = (42, 78, 48)
-FLOOR_DARK = (36, 68, 42)
-FRAME_COLOR = (58, 65, 98)
+FLOOR_LIGHT = (27, 26, 85)
+FLOOR_DARK = (7, 15, 43)
 
 DIRECTIONS = ("up", "down", "left", "right")
 
@@ -34,7 +33,6 @@ class Renderer:
         pygame.init()
         self.cell_number = cell_number
         self.cell_size = cell_size
-        self.board_pixel_size = cell_number * cell_size
 
         self.head_images = {
             d: _load(f"head_{d}.png", cell_size) for d in DIRECTIONS
@@ -42,18 +40,20 @@ class Renderer:
         self.tail_images = {
             d: _load(f"tail_{d}.png", cell_size) for d in DIRECTIONS
         }
-        self.body_image = _load("body.png", cell_size)
+        self.body_horizontal_image = _load("body_horizontal.png", cell_size)
+        self.body_vertical_image = _load("body_vertical.png", cell_size)
+        self.body_corner_images = {
+            corner: _load(f"body_corner_{corner}.png", cell_size)
+            for corner in ("tl", "tr", "bl", "br")
+        }
         self.green_apple_image = _load("apple_green.png", cell_size)
         self.red_apple_image = _load("apple_red.png", cell_size)
 
     def draw_onto(self, surface, game_state, top_left=(0, 0)):
-        """Draw the board onto `surface` at `top_left`. The caller is
-        responsible for creating the window and flipping the display."""
         ox, oy = top_left
         self._draw_floor(surface, ox, oy)
         self._draw_apples(surface, game_state, ox, oy)
         self._draw_snake(surface, game_state.snake, ox, oy)
-        self._draw_frame(surface, ox, oy)
 
     def _cell_rect(self, x, y, ox, oy):
         return pygame.Rect(
@@ -69,15 +69,6 @@ class Renderer:
                 color = FLOOR_LIGHT if (x + y) % 2 == 0 else FLOOR_DARK
                 surface.fill(color, self._cell_rect(x, y, ox, oy))
 
-    def _draw_frame(self, surface, ox, oy):
-        rect = pygame.Rect(
-            ox - 4,
-            oy - 4,
-            self.board_pixel_size + 8,
-            self.board_pixel_size + 8,
-        )
-        pygame.draw.rect(surface, FRAME_COLOR, rect, width=4)
-
     def _draw_apples(self, surface, game_state, ox, oy):
         for apple in game_state.green_apples:
             rect = self._cell_rect(apple.position.x, apple.position.y, ox, oy)
@@ -85,6 +76,30 @@ class Renderer:
         red = game_state.red_apple
         rect = self._cell_rect(red.position.x, red.position.y, ox, oy)
         surface.blit(self.red_apple_image, rect.topleft)
+
+    def _body_sprite_for(self, body, i):
+        segment = body[i]
+        previous_block = body[i + 1] - segment
+        next_block = body[i - 1] - segment
+
+        if previous_block.x == next_block.x:
+            return self.body_vertical_image
+        if previous_block.y == next_block.y:
+            return self.body_horizontal_image
+
+        if (previous_block.x == -1 and next_block.y == -1) or (
+            previous_block.y == -1 and next_block.x == -1
+        ):
+            return self.body_corner_images["tl"]
+        if (previous_block.x == -1 and next_block.y == 1) or (
+            previous_block.y == 1 and next_block.x == -1
+        ):
+            return self.body_corner_images["bl"]
+        if (previous_block.x == 1 and next_block.y == -1) or (
+            previous_block.y == -1 and next_block.x == 1
+        ):
+            return self.body_corner_images["tr"]
+        return self.body_corner_images["br"]
 
     def _draw_snake(self, surface, snake, ox, oy):
         body = snake.body
@@ -97,7 +112,7 @@ class Renderer:
                 )
                 surface.blit(self.head_images[facing], rect.topleft)
             elif i == n - 1:
-                facing = _direction_between(body[i], body[i - 1])
+                facing = _direction_between(body[i - 1], body[i])
                 surface.blit(self.tail_images[facing], rect.topleft)
             else:
-                surface.blit(self.body_image, rect.topleft)
+                surface.blit(self._body_sprite_for(body, i), rect.topleft)
