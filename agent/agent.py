@@ -1,14 +1,13 @@
-import random
-from collections import deque
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
 
+import random
+from collections import deque
+
 from interpreter import get_vision
-from .action import ACTIONS
-from .network import QNetwork
-from .state_encoding import encode_state_vector, STATE_DIM
+from agent.network import QNetwork
+from agent.utils import encode_state_vector, STATE_DIM, ACTIONS
 
 
 class ReplayBuffer:

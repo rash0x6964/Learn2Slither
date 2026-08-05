@@ -35,7 +35,7 @@ def get_vision(game_state):
     left = [_cell_char(game_state, x, hy) for x in range(hx - 1, -2, -1)]
     right = [_cell_char(game_state, x, hy) for x in range(hx + 1, n + 1)]
 
-    return {"up": up, "down": down, "left": left, "right": right}
+    return {"UP": up, "DOWN": down, "LEFT": left, "RIGHT": right}
 
 
 def build_vision_lines(game_state):

@@ -8,8 +8,7 @@ from environment.game_state import GameState
 from environment.renderer import Renderer
 from interpreter import print_vision
 from agent.agent import QLearningAgent
-from agent.action import action_to_vector
-from agent.rewards import compute_reward
+from agent.utils import action_to_vector, compute_reward
 
 CELL_SIZE = 32
 
