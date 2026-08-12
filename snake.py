@@ -13,7 +13,7 @@ from agent.utils import action_to_vector, compute_reward
 CELL_SIZE = 32
 
 
-def parse_args(argv=None):
+def parse_args():
     parser = argparse.ArgumentParser(prog="snake", description="Learn2Slither")
     parser.add_argument(
         "-sessions",
@@ -69,7 +69,7 @@ def parse_args(argv=None):
         "steps without dying -- guards against a deterministic "
         "greedy policy (e.g. -dontlearn) looping forever",
     )
-    return parser.parse_args(argv)
+    return parser.parse_args()
 
 
 def _wait_for_step():
@@ -210,9 +210,5 @@ def run(args):
         pygame.quit()
 
 
-def main(argv=None):
-    run(parse_args(argv))
-
-
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    run(parse_args())

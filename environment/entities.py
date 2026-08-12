@@ -46,6 +46,7 @@ class Snake:
 
     def grow(self):
         self.add_new_block = True
+        return True
 
     def shrink(self):
         if len(self.body) <= 1:
@@ -99,8 +100,7 @@ class GreenApple(Apple):
     kind = "green"
 
     def apply(self, snake):
-        snake.grow()
-        return True
+        return snake.grow()
 
 
 class RedApple(Apple):
