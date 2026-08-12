@@ -2,7 +2,7 @@
 /.ruff_cache
 /.venv
 
-/assets
+# /assets
 /models
 
 uv.lock
