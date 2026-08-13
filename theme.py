@@ -25,7 +25,9 @@ def font(size, bold=True):
     return _font_cache[key]
 
 
-def draw_text(surface, text, pos, size=18, color=TEXT, bold=True, center=False):
+def draw_text(
+    surface, text, pos, size=18, color=TEXT, bold=True, center=False
+):
     # antialias off: crisper/blockier
     label = font(size, bold).render(text, False, color)
     rect = label.get_rect()

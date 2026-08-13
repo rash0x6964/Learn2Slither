@@ -1,7 +1,5 @@
-import argparse
-import sys
-
 import pygame
+import argparse
 
 import screens
 from environment.game_state import GameState
@@ -11,6 +9,25 @@ from agent.agent import QLearningAgent
 from agent.utils import action_to_vector, compute_reward
 
 CELL_SIZE = 32
+
+
+def _board_size(value):
+    value = int(value)
+    if value < 5:
+        raise argparse.ArgumentTypeError(
+            f"must be at least 5 (got {value}) -- a smaller "
+            f"board can't fit the initial 3-segment snake with its margin"
+        )
+    return value
+
+
+def _speed(value):
+    value = float(value)
+    if value <= 0:
+        raise argparse.ArgumentTypeError(
+            f"must be greater than 0 (got {value})"
+        )
+    return value
 
 
 def parse_args():
@@ -54,12 +71,15 @@ def parse_args():
     )
     parser.add_argument(
         "-speed",
-        type=float,
+        type=_speed,
         default=10.0,
         help="moves per second in visual mode (ignored in step-by-step mode)",
     )
     parser.add_argument(
-        "-board-size", type=int, default=10, help="board width/height in cells"
+        "-board-size",
+        type=_board_size,
+        default=10,
+        help="board width/height in cells (minimum 5)",
     )
     parser.add_argument(
         "-max-steps",
@@ -203,6 +223,14 @@ def run(args):
     if config["save_path"]:
         agent.save(config["save_path"])
         print(f"Save learning state in {config['save_path']}")
+
+    if episode_results:
+        lengths = [length for length, steps in episode_results]
+        durations = [steps for length, steps in episode_results]
+        print(f"\nSessions run: {len(lengths)}")
+        print(f"Best length: {max(lengths)}")
+        print(f"Average length: {sum(lengths) / len(lengths):.2f}")
+        print(f"Average duration: {sum(durations) / len(durations):.1f} steps")
 
     if visual:
         window = pygame.display.set_mode(screens.MENU_WINDOW_SIZE)
