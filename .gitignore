@@ -3,7 +3,7 @@
 /.venv
 
 # /assets
-/models
+# /models
 
 uv.lock
 
