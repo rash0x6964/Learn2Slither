@@ -3,7 +3,7 @@ import theme
 import pygame
 from widgets import Button, SelectList, Stepper, Toggle
 
-MENU_WINDOW_SIZE = (480, 560)
+MENU_WINDOW_SIZE = (480, 580)
 MODELS_DIR = "models"
 
 
@@ -86,7 +86,7 @@ def show_config(window, clock, args):
         if base in models:
             initial_index = models.index(base) + 1
     load_select = SelectList(
-        (40, 330, 400, 120), ["(none)"] + models, initial_index
+        (40, 330, 400, 140), ["(none)"] + models, initial_index
     )
 
     def start():
@@ -109,8 +109,8 @@ def show_config(window, clock, args):
     def back():
         result["value"] = "back"
 
-    start_button = Button((40, 460, 180, 40), "START", start)
-    back_button = Button((240, 460, 180, 40), "BACK", back)
+    start_button = Button((40, 480, 180, 40), "START", start)
+    back_button = Button((240, 480, 180, 40), "BACK", back)
 
     widgets = [
         sessions_stepper,
